@@ -245,11 +245,11 @@ namespace CHAT {
 			// uncorr
 			// 
 			this->uncorr->AutoSize = true;
-			this->uncorr->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+			this->uncorr->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 10.2F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(204)));
 			this->uncorr->Location = System::Drawing::Point(42, 224);
 			this->uncorr->Name = L"uncorr";
-			this->uncorr->Size = System::Drawing::Size(0, 25);
+			this->uncorr->Size = System::Drawing::Size(0, 20);
 			this->uncorr->TabIndex = 12;
 			// 
 			// Chat
@@ -288,6 +288,7 @@ namespace CHAT {
 	}
 	private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
 		if (button1->Text == "Connect") {
+			this->uncorr->Text = "";
 			String^ name = NameIn->Text;
 			String^ Ip = IP->Text;
 			String^ pass = password->Text;
@@ -295,13 +296,31 @@ namespace CHAT {
 			int PORT = Convert::ToInt32(port);
 
 
-			to_str(test.ip, Ip);
-			test.PORT = PORT;
-			to_str(test.password, pass);
-			to_str(test.login, name);
+			std::string ip;
+			std::string log;
+			std::string passw;
+
+
+			to_str(log, name);
+			to_str(passw, pass);
+			to_str(ip, Ip);
+
+
+			test.set_ip(ip);
+			test.set_port(PORT);
+			test.set_login(log);
+			test.set_password(passw);
+			
 
 			test.bindSocket();
-			test.connection();
+			try {
+				test.connection();
+			}
+			catch(const std::logic_error& ex){
+				this->uncorr->Text = "Can't connect";
+				return;
+			}
+			
 			if (test.signUP()) {
 				Send->Enabled = true;
 				cht->Enabled = true;
@@ -324,15 +343,18 @@ namespace CHAT {
 			Send->Enabled = false;
 			cht->Enabled = false;
 			INPUT->Enabled = false;
+			INPUT->Clear();
 			NameIn->Enabled = true;
 			IP->Enabled = true;
 			password->Enabled = true;
 			Port->Enabled = true;
 			button1->Text = "Connect";
+			this->UsersOnline->Text = "Users Online:";
+			test.disconnect();
+			
 
-			test.ip.clear();
-			test.login.clear();
-			test.password.clear();
+			
+
 			
 		}
 
@@ -395,19 +417,30 @@ private: System::String^ to_STR(std::string text) {
 private: System::Void portlab_Click(System::Object^ sender, System::EventArgs^ e) {
 }
 	private: System::Void get() {
-		std::string users = "Users online: ";
-		while (true) {
-			std::string who = test.Recieve();
-			String^ wh = to_STR(who);
-			if (wh->StartsWith("Users onl")) {
-				UsersOnline->Text = wh;
-			}
-			else {
-				std::string msg = test.Recieve();
-				String^ message = to_STR(msg);
-				cht->AppendText("from " + wh + " : " + message + "\n");
+		try {
+			while (this->INPUT->Enabled == true) {
+				std::string who = test.Recieve();
+				if (INPUT->Enabled == false) { break; }
+				String^ wh = to_STR(who);
+				if (wh->StartsWith("&dsa9dwaldwoaiddwahgdgy872coac")) {
+					this->UsersOnline->Text = "";
+					String^ num = "";
+					for (int i = 30; i < wh->Length; i++) {
+						num += wh[i];
+					}
+					this->UsersOnline->Text = "Users online : " + num;
+				}
+				else {
+					std::string msg = test.Recieve();
+					String^ message = to_STR(msg);
+					cht->AppendText("from " + wh + " : " + message + "\n");
+				}
 			}
 		}
+		catch (const std::logic_error& ex) {
+			return;
+		}
+		
 	}
 private: System::Void Send_Enter(System::Object^ sender, System::EventArgs^ e) {
 	String^ text = INPUT->Text;

@@ -18,31 +18,34 @@ private:
 	SOCKET clientSocket;
 	sockaddr_in socket_addr;
 
-	std::vector<std::string> other_users;
+	std::string login;
+	std::string password;
+	std::string ip;
+	bool conn = false;
+	int PORT;
 
 
 
 public:
 	client();
-	std::string login;
-	std::string password;
-	std::string ip;
-	int PORT;
+	
 	void startUp();
 	void bindSocket();
 	void connection();
 	void SendData(std::string& data);
 	std::string Recieve();
 	bool signUP();
-	~client() {
-		closesocket(clientSocket);
-	}
+	~client();
+	std::string& get_login();
+	std::string& get_password();
+	std::string& get_ip();
 
-	void InfOther();
-	void checkOther();
-	void get_msg();
-	void stopSocket();
-	void startSocket();
+	void set_login(std::string log);
+	void set_password(std::string pass);
+	void set_ip(std::string ip);
+	void set_port(int port);
+
+	void disconnect();
 
 
 };
